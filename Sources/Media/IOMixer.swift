@@ -445,11 +445,11 @@ extension IOMixer: Running {
 
 extension IOMixer: VideoCodecDelegate {
     // MARK: VideoCodecDelegate
-    func videoCodec(_ codec: VideoCodec<IOMixer>, didOutput formatDescription: CMFormatDescription?) {
+    public func videoCodec(_ codec: VideoCodec<IOMixer>, didOutput formatDescription: CMFormatDescription?) {
         muxer?.videoFormat = formatDescription
     }
 
-    func videoCodec(_ codec: VideoCodec<IOMixer>, didOutput sampleBuffer: CMSampleBuffer) {
+    public func videoCodec(_ codec: VideoCodec<IOMixer>, didOutput sampleBuffer: CMSampleBuffer) {
         switch sampleBuffer.formatDescription?._mediaSubType {
         case kCVPixelFormatType_1Monochrome,
              kCVPixelFormatType_2Indexed,
@@ -504,7 +504,7 @@ extension IOMixer: VideoCodecDelegate {
         }
     }
 
-    func videoCodec(_ codec: VideoCodec<IOMixer>, errorOccurred error: IOMixerVideoError) {
+    public func videoCodec(_ codec: VideoCodec<IOMixer>, errorOccurred error: IOMixerVideoError) {
         delegate?.mixer(self, videoErrorOccurred: error)
     }
 }

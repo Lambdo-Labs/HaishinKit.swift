@@ -8,7 +8,7 @@ import UIKit
 /**
  * The interface a VideoCodec uses to inform its delegate.
  */
-protocol VideoCodecDelegate: AnyObject {
+public protocol VideoCodecDelegate: AnyObject {
     /// Tells the receiver to set a formatDescription.
     func videoCodec(_ codec: VideoCodec<Self>, didOutput formatDescription: CMFormatDescription?)
     /// Tells the receiver to output an encoded or decoded sampleBuffer.
@@ -27,11 +27,11 @@ private let kVideoCodec_defaultAttributes: [NSString: AnyObject]? = [
 /**
  * The VideoCodec class provides methods for encode or decode for video.
  */
-final class VideoCodec<T: VideoCodecDelegate> {
+public final class VideoCodec<T: VideoCodecDelegate> {
     let lockQueue: DispatchQueue
 
     /// Specifies the settings for a VideoCodec.
-    var settings: VideoCodecSettings = .default {
+    public var settings: VideoCodecSettings = .default {
         didSet {
             let invalidateSession = settings.invalidateSession(oldValue)
             if invalidateSession {
@@ -43,7 +43,7 @@ final class VideoCodec<T: VideoCodecDelegate> {
     }
 
     /// The running value indicating whether the VideoCodec is running.
-    private(set) var isRunning: Atomic<Bool> = .init(false)
+    private(set) public var isRunning: Atomic<Bool> = .init(false)
     var needsSync: Atomic<Bool> = .init(true)
     var attributes: [NSString: AnyObject]? {
         guard kVideoCodec_defaultAttributes != nil else {
@@ -55,14 +55,15 @@ final class VideoCodec<T: VideoCodecDelegate> {
         }
         attributes[kCVPixelBufferWidthKey] = NSNumber(value: settings.videoSize.width)
         attributes[kCVPixelBufferHeightKey] = NSNumber(value: settings.videoSize.height)
+//        attributes[kVTCompressionPropertyKey_ExpectedFrameRate] = NSNumber(value: 1 / settings.frameInterval)
         return attributes
     }
     var passthrough = true
-    var frameInterval = kVideoCodec_defaultFrameInterval
-    var expectedFrameRate = IOMixer.defaultFrameRate
-    weak var delegate: T?
+    public var frameInterval = kVideoCodec_defaultFrameInterval
+    public var expectedFrameRate = IOMixer.defaultFrameRate
+    public weak var delegate: T?
     private var startedAt: CMTime = .zero
-    private(set) var inputFormat: CMFormatDescription? {
+    public var inputFormat: CMFormatDescription? {
         didSet {
             guard !CMFormatDescriptionEqual(inputFormat, otherFormatDescription: oldValue) else {
                 return
@@ -87,11 +88,11 @@ final class VideoCodec<T: VideoCodecDelegate> {
     private var invalidateSession = true
     private var presentationTimeStamp: CMTime = .invalid
 
-    init(lockQueue: DispatchQueue) {
+    public init(lockQueue: DispatchQueue) {
         self.lockQueue = lockQueue
     }
 
-    func append(_ imageBuffer: CVImageBuffer, presentationTimeStamp: CMTime, duration: CMTime) {
+    public func append(_ imageBuffer: CVImageBuffer, presentationTimeStamp: CMTime, duration: CMTime) {
         guard isRunning.value, !willDropFrame(presentationTimeStamp) else {
             return
         }
@@ -113,7 +114,7 @@ final class VideoCodec<T: VideoCodecDelegate> {
         }
     }
 
-    func append(_ sampleBuffer: CMSampleBuffer) {
+    public func append(_ sampleBuffer: CMSampleBuffer) {
         inputFormat = sampleBuffer.formatDescription
         guard isRunning.value else {
             return
@@ -202,7 +203,7 @@ final class VideoCodec<T: VideoCodecDelegate> {
 
 extension VideoCodec: Running {
     // MARK: Running
-    func startRunning() {
+    public func startRunning() {
         lockQueue.async {
             #if os(iOS) || os(tvOS) || os(visionOS)
             NotificationCenter.default.addObserver(
@@ -223,7 +224,7 @@ extension VideoCodec: Running {
         }
     }
 
-    func stopRunning() {
+    public func stopRunning() {
         lockQueue.async {
             self.isRunning.mutate { $0 = false }
             self.session = nil
